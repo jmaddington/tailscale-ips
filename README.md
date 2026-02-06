@@ -2,17 +2,29 @@
 
 Auto-updated list of Tailscale DERP relay server IPs, parsed hourly from the [official DERP map](https://controlplane.tailscale.com/derpmap/default).
 
-Useful for firewall allowlists (pfSense, OPNsense, etc.) where you need to permit traffic to Tailscale relay servers.
+Useful for firewall allowlists (pfSense, OPNsense, etc.) where you need to permit traffic to Tailscale DERP relay servers.
+
+This is not an official Tailscale project. It is a community resource.
+
+## Quick Links
+
+| List | Raw URL |
+|------|---------|
+| All IPs | [`tailscale.all.txt`](https://raw.githubusercontent.com/jmaddington/tailscale-ips/main/tailscale.all.txt) |
+| All IPv4 | [`tailscale.all-ipv4.txt`](https://raw.githubusercontent.com/jmaddington/tailscale-ips/main/tailscale.all-ipv4.txt) |
+| All IPv6 | [`tailscale.all-ipv6.txt`](https://raw.githubusercontent.com/jmaddington/tailscale-ips/main/tailscale.all-ipv6.txt) |
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| `tailscale.all.txt` | All IPs (IPv4 + IPv6) |
-| `tailscale.all-ipv4.txt` | All IPv4 addresses only |
-| `tailscale.all-ipv6.txt` | All IPv6 addresses only |
-| `tailscale.region.<id>.txt` | IPs for a specific region by ID (e.g., `tailscale.region.13.txt`) |
-| `tailscale.region.<name>.txt` | IPs for a specific region by name (e.g., `tailscale.region.denver.txt`) |
+| Pattern | Description | Example |
+|---------|-------------|---------|
+| `tailscale.all.txt` | All IPs (IPv4 + IPv6) | |
+| `tailscale.all-ipv4.txt` | All IPv4 addresses | |
+| `tailscale.all-ipv6.txt` | All IPv6 addresses | |
+| `tailscale.region.<id>.txt` | IPs by region ID | `tailscale.region.13.txt` |
+| `tailscale.region.<name>.txt` | IPs by region name | `tailscale.region.denver.txt` |
+
+Each file contains one IP per line. Region files include a `#` comment header with the region name and code. Lines starting with `#` are ignored by most firewall parsers.
 
 ## Usage with pfSense
 
@@ -22,46 +34,68 @@ You can use URL Table aliases in pfSense to automatically pull these lists:
 2. Add a new alias with type **URL Table (IPs)**
 3. Point it at the raw GitHub URL, e.g.:
    ```
-   https://raw.githubusercontent.com/<owner>/tailscale-ips/main/tailscale.all-ipv4.txt
+   https://raw.githubusercontent.com/jmaddington/tailscale-ips/main/tailscale.all-ipv4.txt
    ```
-4. Set the update frequency (e.g., 1 hour)
+4. Set the update frequency (e.g., 1 day -- the list is updated hourly so there's no need to poll more than once a day)
 5. Use the alias in your firewall rules
 
-Lines starting with `#` are comments and will be ignored by most firewall parsers.
+For a specific region only:
+```
+https://raw.githubusercontent.com/jmaddington/tailscale-ips/main/tailscale.region.denver.txt
+```
+
+## Usage with OPNsense
+
+1. Go to **Firewall > Aliases**
+2. Create a new alias with type **URL Table (IPs)**
+3. Enter the raw URL and set a refresh interval
 
 ## Regions
 
-| ID | Code | Name |
-|----|------|------|
-| 1 | nyc | New York City |
-| 2 | sfo | San Francisco |
-| 3 | sin | Singapore |
-| 4 | fra | Frankfurt |
-| 5 | syd | Sydney |
-| 6 | blr | Bengaluru |
-| 7 | tok | Tokyo |
-| 8 | lhr | London |
-| 9 | dfw | Dallas |
-| 10 | sea | Seattle |
-| 11 | sao | Sao Paulo |
-| 12 | ord | Chicago |
-| 13 | den | Denver |
-| 14 | ams | Amsterdam |
-| 15 | jnb | Johannesburg |
-| 16 | mia | Miami |
-| 17 | lax | Los Angeles |
-| 18 | par | Paris |
-| 19 | mad | Madrid |
-| 20 | hkg | Hong Kong |
-| 21 | tor | Toronto |
-| 22 | waw | Warsaw |
-| 23 | dbi | Dubai |
-| 24 | hnl | Honolulu |
-| 25 | nai | Nairobi |
-| 26 | nue | Nuremberg |
-| 27 | iad | Ashburn |
-| 28 | hel | Helsinki |
+| ID | Code | Name | File by Name |
+|----|------|------|--------------|
+| 1 | nyc | New York City | `tailscale.region.new-york-city.txt` |
+| 2 | sfo | San Francisco | `tailscale.region.san-francisco.txt` |
+| 3 | sin | Singapore | `tailscale.region.singapore.txt` |
+| 4 | fra | Frankfurt | `tailscale.region.frankfurt.txt` |
+| 5 | syd | Sydney | `tailscale.region.sydney.txt` |
+| 6 | blr | Bengaluru | `tailscale.region.bengaluru.txt` |
+| 7 | tok | Tokyo | `tailscale.region.tokyo.txt` |
+| 8 | lhr | London | `tailscale.region.london.txt` |
+| 9 | dfw | Dallas | `tailscale.region.dallas.txt` |
+| 10 | sea | Seattle | `tailscale.region.seattle.txt` |
+| 11 | sao | Sao Paulo | `tailscale.region.sao-paulo.txt` |
+| 12 | ord | Chicago | `tailscale.region.chicago.txt` |
+| 13 | den | Denver | `tailscale.region.denver.txt` |
+| 14 | ams | Amsterdam | `tailscale.region.amsterdam.txt` |
+| 15 | jnb | Johannesburg | `tailscale.region.johannesburg.txt` |
+| 16 | mia | Miami | `tailscale.region.miami.txt` |
+| 17 | lax | Los Angeles | `tailscale.region.los-angeles.txt` |
+| 18 | par | Paris | `tailscale.region.paris.txt` |
+| 19 | mad | Madrid | `tailscale.region.madrid.txt` |
+| 20 | hkg | Hong Kong | `tailscale.region.hong-kong.txt` |
+| 21 | tor | Toronto | `tailscale.region.toronto.txt` |
+| 22 | waw | Warsaw | `tailscale.region.warsaw.txt` |
+| 23 | dbi | Dubai | `tailscale.region.dubai.txt` |
+| 24 | hnl | Honolulu | `tailscale.region.honolulu.txt` |
+| 25 | nai | Nairobi | `tailscale.region.nairobi.txt` |
+| 26 | nue | Nuremberg | `tailscale.region.nuremberg.txt` |
+| 27 | iad | Ashburn | `tailscale.region.ashburn.txt` |
+| 28 | hel | Helsinki | `tailscale.region.helsinki.txt` |
 
-## How it works
+## How It Works
 
-A GitHub Action runs hourly, fetches the DERP map JSON, extracts all IPv4/IPv6 addresses from every node, and commits any changes.
+A [GitHub Action](.github/workflows/update-tailscale-ips.yml) runs every hour:
+
+1. Fetches the DERP map JSON from `https://controlplane.tailscale.com/derpmap/default`
+2. Parses all regions and extracts IPv4/IPv6 addresses from each node
+3. Writes the IP lists to files (one IP per line, sorted)
+4. Commits and pushes only if there are changes
+
+Commit messages follow the format: `Tailscale IPs as of YYYY-MM-DD`
+
+## What are DERP servers?
+
+Tailscale uses DERP (Designated Encrypted Relay for Packets) servers as fallback relays when direct peer-to-peer connections can't be established. They are not used for normal traffic when a direct WireGuard connection succeeds, but firewalls need to allow access to them for Tailscale to function when NAT traversal fails.
+
+See the [Tailscale documentation on DERP](https://tailscale.com/kb/1232/derp-servers) for more details.
