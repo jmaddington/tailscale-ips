@@ -22,7 +22,7 @@ jobs:
           curl -sf https://controlplane.tailscale.com/derpmap/default -o derpmap.json
 
           # Clean old generated files so removed regions don't linger
-          rm -f tailscale.*.txt
+          rm -f tailscale.*.txt tailscale.*.list
 
           python3 <<'PYEOF'
           import json
@@ -71,6 +71,13 @@ jobs:
           # --- All IPv6 ---
           with open("tailscale.all-ipv6.txt", "w") as f:
               f.write("\n".join(sorted(all_ipv6)) + "\n")
+
+          # --- Loon / Surge / Clash ruleset format (no policy; set via subscription) ---
+          with open("tailscale.loon.list", "w") as f:
+              for ip in sorted(all_ipv4):
+                  f.write(f"IP-CIDR,{ip}/32,no-resolve\n")
+              for ip in sorted(all_ipv6):
+                  f.write(f"IP-CIDR6,{ip}/128,no-resolve\n")
 
           # --- Per-region files (by ID and by name) ---
           for rid in sorted(regions.keys()):
