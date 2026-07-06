@@ -121,7 +121,9 @@ jobs:
           MSG="${DATE} - keep github workflow alive"
           case "$(git log -1 --pretty=%s)" in
             *"keep github workflow alive")
-              git commit --amend --date=now -m "$MSG"
+              # --allow-empty: the keepalive commit has no file changes, and
+              # amend otherwise refuses to produce an empty commit.
+              git commit --amend --allow-empty --date=now -m "$MSG"
               git push --force-with-lease
               ;;
             *)
