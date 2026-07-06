@@ -14,6 +14,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Need HEAD + its parent so the keepalive amend/force-push has a real
+          # parent object to reattach to (the default shallow depth-1 does not).
+          fetch-depth: 2
 
       - name: Fetch and parse DERP map
         run: |
@@ -93,19 +97,35 @@ jobs:
 
           rm -f derpmap.json
 
-      - name: Commit and push (keepalive if unchanged)
+      - name: Commit and push (rolling keepalive if unchanged)
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
           DATE=$(date -u +%Y-%m-%d)
-          if git diff --cached --quiet; then
-            # No DERP changes. Push an empty commit anyway so the repo shows
-            # activity -- GitHub disables scheduled workflows after 60 days of
-            # repo inactivity, and scheduled runs alone do NOT count as activity.
-            echo "No DERP changes; pushing keepalive commit"
-            git commit --allow-empty -m "Keepalive: no Tailscale IP changes as of ${DATE}"
-          else
+
+          if ! git diff --cached --quiet; then
+            # DERP IPs changed -- record a real commit and push normally.
             git commit -m "Tailscale IPs as of ${DATE}"
+            git push
+            exit 0
           fi
-          git push
+
+          # No DERP changes. Keep the repo active WITHOUT growing history:
+          # GitHub disables scheduled workflows after 60 days of repo
+          # inactivity, and scheduled runs alone do NOT count as activity.
+          # If the tip is already a keepalive commit, rewrite it in place
+          # (amend + force-push) so there is only ever one at the tip;
+          # otherwise add a single fresh keepalive commit on top.
+          MSG="${DATE} - keep github workflow alive"
+          case "$(git log -1 --pretty=%s)" in
+            *"keep github workflow alive")
+              git commit --amend --date=now -m "$MSG"
+              git push --force-with-lease
+              ;;
+            *)
+              git commit --allow-empty -m "$MSG"
+              git push
+              ;;
+          esac
