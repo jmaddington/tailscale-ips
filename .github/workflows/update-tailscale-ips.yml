@@ -2,7 +2,7 @@ name: Update Tailscale DERP IPs
 
 on:
   schedule:
-    - cron: '0 * * * *' # Every hour
+    - cron: '0 12 * * *' # Daily at 12:00 UTC
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -93,15 +93,19 @@ jobs:
 
           rm -f derpmap.json
 
-      - name: Commit and push if changed
+      - name: Commit and push (keepalive if unchanged)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
+          DATE=$(date -u +%Y-%m-%d)
           if git diff --cached --quiet; then
-            echo "No changes detected"
+            # No DERP changes. Push an empty commit anyway so the repo shows
+            # activity -- GitHub disables scheduled workflows after 60 days of
+            # repo inactivity, and scheduled runs alone do NOT count as activity.
+            echo "No DERP changes; pushing keepalive commit"
+            git commit --allow-empty -m "Keepalive: no Tailscale IP changes as of ${DATE}"
           else
-            DATE=$(date -u +%Y-%m-%d)
             git commit -m "Tailscale IPs as of ${DATE}"
-            git push
           fi
+          git push
