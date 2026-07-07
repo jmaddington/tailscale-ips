@@ -1,6 +1,6 @@
 # Tailscale DERP Server IPs
 
-Auto-updated list of Tailscale DERP relay server IPs, parsed hourly from the [official DERP map](https://controlplane.tailscale.com/derpmap/default).
+Auto-updated list of Tailscale DERP relay server IPs, parsed daily from the [official DERP map](https://controlplane.tailscale.com/derpmap/default).
 
 Useful for firewall allowlists (pfSense, OPNsense, etc.) where you need to permit traffic to Tailscale DERP relay servers.
 
@@ -36,7 +36,7 @@ You can use URL Table aliases in pfSense to automatically pull these lists:
    ```
    https://raw.githubusercontent.com/jmaddington/tailscale-ips/main/tailscale.all-ipv4.txt
    ```
-4. Set the update frequency (e.g., 1 day -- the list is updated hourly so there's no need to poll more than once a day)
+4. Set the update frequency (e.g., 1 day -- the list is updated once a day, so there's no need to poll more often)
 5. Use the alias in your firewall rules
 
 For a specific region only:
@@ -85,14 +85,36 @@ https://raw.githubusercontent.com/jmaddington/tailscale-ips/main/tailscale.regio
 
 ## How It Works
 
-A [GitHub Action](.github/workflows/update-tailscale-ips.yml) runs every hour:
+A [GitHub Action](.github/workflows/update-tailscale-ips.yml) runs once a day (12:00 UTC):
 
 1. Fetches the DERP map JSON from `https://controlplane.tailscale.com/derpmap/default`
 2. Parses all regions and extracts IPv4/IPv6 addresses from each node
 3. Writes the IP lists to files (one IP per line, sorted)
-4. Commits and pushes only if there are changes
+4. Commits and pushes the updated lists **only if the IPs changed**
 
-Commit messages follow the format: `Tailscale IPs as of YYYY-MM-DD`
+When the IPs *did* change, the commit message is: `Tailscale IPs as of YYYY-MM-DD`
+
+### Keepalive commits (and why this repo force-pushes)
+
+GitHub automatically disables scheduled workflows after 60 days of repository
+inactivity, and scheduled runs alone do **not** count as activity -- only
+commits do. Since the DERP IPs often go weeks or months without changing, the
+workflow keeps itself alive with a "keepalive" commit on the days nothing
+changed:
+
+- The keepalive is a single empty commit at the tip of `main`, with the message
+  `YYYY-MM-DD - keep github workflow alive`.
+- To avoid piling up one of these per quiet day, the workflow **rewrites the
+  existing keepalive commit in place** (`git commit --amend --allow-empty`) and
+  **force-pushes** it, rather than adding a new one. So `main` carries at most
+  one keepalive commit at any time.
+
+**If you clone or track this repo:** `main`'s history is periodically rewritten
+by these force-pushes, so a plain `git pull` may complain about diverged
+history. This repo is intended to be consumed via the raw file URLs above (raw
+URLs are unaffected by history rewrites), not cloned. If you do keep a clone,
+use `git fetch && git reset --hard origin/main` to re-sync, and don't build on
+top of the keepalive commit -- it will be replaced.
 
 ## What are DERP servers?
 
